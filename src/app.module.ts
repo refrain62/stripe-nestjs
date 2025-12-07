@@ -2,8 +2,17 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
+// モジュールの読み込み
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
+
 @Module({
-  imports: [],
+  imports: [
+    // 性的HTML配信モジュールを追加し、`client`ディレクトリを読み込ませる
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'client'),
+    }),
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
