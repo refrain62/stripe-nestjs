@@ -100,6 +100,10 @@
             itemElement.innerHTML += `<h2>${product.name}</h2>`
             // 説明文
             if (product.description) itemElement.innerHTML += `<p>${product.description}</p>`
+            // 商品画像
+            if (product.images && product.images.length > 0) {
+              itemElement.innerHTML += `<img src="${product.images[0]}" alt="${product.name}" width="200"/>`
+            }
             // 商品メタデータ
             if (product.metadata) {
               itemElement.innerHTML += '<dl>'
