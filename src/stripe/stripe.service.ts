@@ -6,8 +6,16 @@ export class StripeService {
   private readonly stripe: Stripe
   
   constructor() {
-    this.stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-      apiVersion: '2020-08-27',
+    this.stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+      apiVersion: '2025-11-17.clover',
     })
+  }
+
+  /**
+   * List product that registered in Stripe
+   * @returns 
+   */
+  public async listProducts() {
+      return this.stripe.products.list()
   }
 }
