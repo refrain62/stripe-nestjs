@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import Stripe from 'stripe';
 
 /**
@@ -69,5 +69,30 @@ export class StripeService {
     }
     
     return item
+  }
+
+  /**
+   * Checkout Sessionを作成する
+   * @param priceId 
+   * @param redirectUrl 
+   * @returns 
+   */
+  public async createCheckoutSession(priceId: string, redirectUrl: string) {
+    const price = await this.stripe.prices.retrieve(priceId)
+    if (!price) {
+      throw new NotFoundException('Price not found')
+    }
+
+    const session = await this.stripe.checkout.sessions.create({
+      mode: price.type === 'recurring' ? 'subscription' : 'payment',
+      payment_method_types: ['card'],
+      line_items: [{
+        price: price.id,
+        quantity: 1
+      }],
+      cancel_url: `${redirectUrl}/cancel.html`,
+      success_url: `${redirectUrl}/success.html`,
+    })
+    return session
   }
 }
