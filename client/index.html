@@ -38,7 +38,40 @@
         const button = window.document.createElement('button')
         button.innerText = '購入する'
         button.addEventListener('click', function() {
-          alert('clicked' + price.id)
+          // alert('clicked' + price.id)
+
+          const stripe = Stripe('pk_test_51SbYFm4KCWiczzeWg1YYemkMiT8v6mMMA1cxuIgu5kgEEGN5JwnrLOXTHV99yyv3HU1mwtbguA3jwPOPCrrg9MAU00Ix2NEx5B') // 公開可能キーを指定
+
+          fetch(window.location += 'checkout', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringfy({
+              price_id: price.id,
+            })
+          })
+          .then(response => {
+            if (response.ok) {
+              return response.json()
+            }
+
+            const error = new Error(response.statusText)
+            error.response = response
+            throw error
+          })
+          .then(session => {
+            // 作成したセッション情報を利用してStripe Checkoutにリダイレクトする
+            return stripe.redirectToCheckout({sessionId: session.id})
+          })
+          .then(result => {
+            if (result.error) {
+              throw new Error(result.error.message)
+            }
+          })
+          .catch(e => {
+            console.log(e)
+          })
         })
         row.insertCell().appendChild(button)
       }
