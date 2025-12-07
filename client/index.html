@@ -9,7 +9,7 @@
     <h1>Hello NestJS app</h1>
 
     <div id="greeding"></div>
-    <pre><code id="items"></code></pre>
+    <div id="items"></div>
     <script>
       window.onload = function() {
         fetch(window.location + 'hello')
@@ -30,27 +30,64 @@
             console.log(e);
           })
       }
-    </script>
+      </script>
     <script>
-      window.onload = function() {
+      window.onload = function () {
         fetch(window.location + 'products')
           .then(response => {
-            if(response.ok) {
-              return response.json();
-            }
-
-            const error = new Error(response.statusText);
-            error.response = response;
-            throw error;
+            if (response.ok) {
+              return response.json()
+            } 
+            const error = new Error(response.statusText)
+            error.response = response
+            throw error
           })
           .then(products => {
             const target = window.document.getElementById('items')
-            const element = window.document.createElement('pre')
-            element.innerHTML = `<code>${JSON.stringify(products, null, 2)}</code>`;
+            const element = window.document.createElement('ul')
+            // 商品一覧の表示処理
+            products.forEach(product => {
+              const itemElement = window.document.createElement('li')
+              // 商品名
+              itemElement.innerHTML += `<h2>${product.name}</h2>`
+              // 説明文
+              if (product.description) itemElement.innerHTML += `<p>${product.description}</p>`
+              // 商品メタデータ
+              if (product.metadata) {
+                itemElement.innerHTML += '<dl>'
+                Object.entries(product.metadata).forEach(([key, value]) => {
+                  itemElement.innerHTML += `<dt>${key}</dt><dd>${value}</dd>`
+                })
+                itemElement.innerHTML += '</dl>'
+              }
+              element.appendChild(itemElement)
+
+              if (product.prices) {
+                const priceElement = window.document.createElement('table')
+                const priceHeader = priceElement.createTHead()
+
+                const row = priceHeader.insertRow(0)
+                row.insertCell().innerHTML = 'プラン名'
+                row.insertCell().innerHTML = '料金'
+                
+                const priceBody = priceElement.createTBody()
+                product.prices.forEach((price) => {
+                  // この値がないPriceは、Stripe Checkoutで決済できないので除外
+                  if (!price.unit_amount_decimal) return;
+                  const row = priceBody.insertRow()
+                  row.insertCell().innerHTML = price.nickname || '無名のプラン'
+                  row.insertCell().innerHTML = `${Number(price.unit_amount_decimal).toLocaleString('jp-JP')} (${price.currency.toLocaleUpperCase()})`
+                  const button = window.document.createElement('button')
+                  button.innerText = '購入する'
+                  row.insertCell().appendChild(button)
+                })
+                element.appendChild(priceElement)
+              }
+            })
             target.appendChild(element)
           })
           .catch(e => {
-            console.log(e);
+            console.log(e)
           })
       }
     </script>
