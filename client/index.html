@@ -9,6 +9,7 @@
     <h1>Hello NestJS app</h1>
 
     <div id="greeding"></div>
+    <pre><code id="items"></code></pre>
     <script>
       window.onload = function() {
         fetch(window.location + 'hello')
@@ -24,6 +25,29 @@
           .then(data => {
             const target = window.document.getElementById('greeding');
             target.innerHTML = data;
+          })
+          .catch(e => {
+            console.log(e);
+          })
+      }
+    </script>
+    <script>
+      window.onload = function() {
+        fetch(window.location + 'products')
+          .then(response => {
+            if(response.ok) {
+              return response.json();
+            }
+
+            const error = new Error(response.statusText);
+            error.response = response;
+            throw error;
+          })
+          .then(products => {
+            const target = window.document.getElementById('items')
+            const element = window.document.createElement('pre')
+            element.innerHTML = `<code>${JSON.stringify(products, null, 2)}</code>`;
+            target.appendChild(element)
           })
           .catch(e => {
             console.log(e);
