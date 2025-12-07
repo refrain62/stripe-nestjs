@@ -7,5 +7,28 @@
   </head>
   <body is="home">
     <h1>Hello NestJS app</h1>
+
+    <div id="greeding"></div>
+    <script>
+      window.onload = function() {
+        fetch(window.location + 'hello')
+          .then(response => {
+            if(response.ok) {
+              return response.text();
+            }
+
+            const error = new Error(response.statusText);
+            error.response = response;
+            throw error;
+          })
+          .then(data => {
+            const target = window.document.getElementById('greeding');
+            target.innerHTML = data;
+          })
+          .catch(e => {
+            console.log(e);
+          })
+      }
+    </script>
   </body>
 </html>
