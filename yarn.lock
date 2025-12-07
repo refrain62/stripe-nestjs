@@ -6061,7 +6061,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"qs@npm:^6.11.2, qs@npm:^6.14.0":
+"qs@npm:^6.11.0, qs@npm:^6.11.2, qs@npm:^6.14.0":
   version: 6.14.0
   resolution: "qs@npm:6.14.0"
   dependencies:
@@ -6647,6 +6647,7 @@ __metadata:
     reflect-metadata: "npm:^0.2.2"
     rxjs: "npm:^7.8.1"
     source-map-support: "npm:^0.5.21"
+    stripe: "npm:^20.0.0"
     supertest: "npm:^7.0.0"
     ts-jest: "npm:^29.2.5"
     ts-loader: "npm:^9.5.2"
@@ -6656,6 +6657,20 @@ __metadata:
     typescript-eslint: "npm:^8.20.0"
   languageName: unknown
   linkType: soft
+
+"stripe@npm:^20.0.0":
+  version: 20.0.0
+  resolution: "stripe@npm:20.0.0"
+  dependencies:
+    qs: "npm:^6.11.0"
+  peerDependencies:
+    "@types/node": ">=16"
+  peerDependenciesMeta:
+    "@types/node":
+      optional: true
+  checksum: 10c0/4225ff1f03a77bbaffa9fb2c6ceb421ffb16f37a9a6f6c554e56c96f38646e340bb2deca405b7d8e9338b975791b6fac650ab75775fac58a70e77c3dd9b7e231
+  languageName: node
+  linkType: hard
 
 "strtok3@npm:^10.3.1":
   version: 10.3.4
