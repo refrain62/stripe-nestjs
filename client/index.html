@@ -1,58 +1,60 @@
 <!DOCTYPE html>
 <html lang="ja">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Stripe NestJS</title>
-    <script src="https://js.stripe.com/v3/"></script>
-  </head>
-  <body is="home">
-    <h1>Hello NestJS app</h1>
 
-    <div id="greeding"></div>
-    <div id="items"></div>
-    <script>
-      window.onload = function() {
-        fetch(window.location + 'hello')
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Stripe NestJS</title>
+  <script src="https://js.stripe.com/v3/"></script>
+</head>
+
+<body is="home">
+  <h1>Hello NestJS app</h1>
+
+  <div id="greeding"></div>
+  <div id="items"></div>
+  <script>
+    window.onload = function () {
+      fetch(window.location + 'hello')
+        .then(response => {
+          if (response.ok) {
+            return response.text();
+          }
+
+          const error = new Error(response.statusText);
+          error.response = response;
+          throw error;
+        })
+        .then(data => {
+          const target = window.document.getElementById('greeding');
+          target.innerHTML = data;
+        })
+        .catch(e => {
+          console.log(e);
+        })
+    }
+  </script>
+  <script>
+    // 購入ボタンの作成
+    function createStripeCheckoutButton(row, price) {
+      const button = window.document.createElement('button')
+      button.innerText = '購入する'
+      button.addEventListener('click', function () {
+        // alert('clicked' + price.id)
+
+        const stripe = Stripe('pk_test_51SbYFm4KCWiczzeWg1YYemkMiT8v6mMMA1cxuIgu5kgEEGN5JwnrLOXTHV99yyv3HU1mwtbguA3jwPOPCrrg9MAU00Ix2NEx5B') // 公開可能キーを指定
+
+        fetch(window.location + 'checkout', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            price_id: price.id
+          })
+        })
           .then(response => {
-            if(response.ok) {
-              return response.text();
-            }
-
-            const error = new Error(response.statusText);
-            error.response = response;
-            throw error;
-          })
-          .then(data => {
-            const target = window.document.getElementById('greeding');
-            target.innerHTML = data;
-          })
-          .catch(e => {
-            console.log(e);
-          })
-      }
-      </script>
-    <script>
-      // 購入ボタンの作成
-      function createStripeCheckoutButton(row, price) {
-        const button = window.document.createElement('button')
-        button.innerText = '購入する'
-        button.addEventListener('click', function() {
-          // alert('clicked' + price.id)
-
-          const stripe = Stripe('pk_test_51SbYFm4KCWiczzeWg1YYemkMiT8v6mMMA1cxuIgu5kgEEGN5JwnrLOXTHV99yyv3HU1mwtbguA3jwPOPCrrg9MAU00Ix2NEx5B') // 公開可能キーを指定
-
-          fetch(window.location += 'checkout', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringfy({
-              price_id: price.id,
-            })
-          })
-          .then(response => {
-            if (response.ok) {
+            if (response.ok){
               return response.json()
             }
 
@@ -62,7 +64,7 @@
           })
           .then(session => {
             // 作成したセッション情報を利用してStripe Checkoutにリダイレクトする
-            return stripe.redirectToCheckout({sessionId: session.id})
+            return stripe.redirectToCheckout({ sessionId: session.id })
           })
           .then(result => {
             if (result.error) {
@@ -72,69 +74,71 @@
           .catch(e => {
             console.log(e)
           })
+
+      })
+      row.insertCell().appendChild(button)
+    }
+
+    // 商品一覧の取得と表示
+    window.onload = function () {
+      fetch(window.location + 'products')
+        .then(response => {
+          if (response.ok) {
+            return response.json()
+          }
+          const error = new Error(response.statusText)
+          error.response = response
+          throw error
         })
-        row.insertCell().appendChild(button)
-      }
+        .then(products => {
+          const target = window.document.getElementById('items')
+          const element = window.document.createElement('ul')
+          // 商品一覧の表示処理
+          products.forEach(product => {
+            const itemElement = window.document.createElement('li')
+            // 商品名
+            itemElement.innerHTML += `<h2>${product.name}</h2>`
+            // 説明文
+            if (product.description) itemElement.innerHTML += `<p>${product.description}</p>`
+            // 商品メタデータ
+            if (product.metadata) {
+              itemElement.innerHTML += '<dl>'
+              Object.entries(product.metadata).forEach(([key, value]) => {
+                itemElement.innerHTML += `<dt>${key}</dt><dd>${value}</dd>`
+              })
+              itemElement.innerHTML += '</dl>'
+            }
+            element.appendChild(itemElement)
 
-      // 商品一覧の取得と表示
-      window.onload = function () {
-        fetch(window.location + 'products')
-          .then(response => {
-            if (response.ok) {
-              return response.json()
-            } 
-            const error = new Error(response.statusText)
-            error.response = response
-            throw error
+            if (product.prices) {
+              const priceElement = window.document.createElement('table')
+              const priceHeader = priceElement.createTHead()
+
+              const row = priceHeader.insertRow(0)
+              row.insertCell().innerHTML = 'プラン名'
+              row.insertCell().innerHTML = '料金'
+
+              const priceBody = priceElement.createTBody()
+              product.prices.forEach((price) => {
+                // この値がないPriceは、Stripe Checkoutで決済できないので除外
+                if (!price.unit_amount_decimal) return;
+                const row = priceBody.insertRow()
+                row.insertCell().innerHTML = price.nickname || '無名のプラン'
+                row.insertCell().innerHTML = `${Number(price.unit_amount_decimal).toLocaleString('jp-JP')} (${price.currency.toLocaleUpperCase()})`
+
+                // 購入ボタンの作成
+                createStripeCheckoutButton(row, price)
+              })
+              element.appendChild(priceElement)
+            }
           })
-          .then(products => {
-            const target = window.document.getElementById('items')
-            const element = window.document.createElement('ul')
-            // 商品一覧の表示処理
-            products.forEach(product => {
-              const itemElement = window.document.createElement('li')
-              // 商品名
-              itemElement.innerHTML += `<h2>${product.name}</h2>`
-              // 説明文
-              if (product.description) itemElement.innerHTML += `<p>${product.description}</p>`
-              // 商品メタデータ
-              if (product.metadata) {
-                itemElement.innerHTML += '<dl>'
-                Object.entries(product.metadata).forEach(([key, value]) => {
-                  itemElement.innerHTML += `<dt>${key}</dt><dd>${value}</dd>`
-                })
-                itemElement.innerHTML += '</dl>'
-              }
-              element.appendChild(itemElement)
+          target.appendChild(element)
+        })
+        .catch(e => {
+          console.log(e)
+        })
+    }
+  </script>
+</body>
 
-              if (product.prices) {
-                const priceElement = window.document.createElement('table')
-                const priceHeader = priceElement.createTHead()
-
-                const row = priceHeader.insertRow(0)
-                row.insertCell().innerHTML = 'プラン名'
-                row.insertCell().innerHTML = '料金'
-
-                const priceBody = priceElement.createTBody()
-                product.prices.forEach((price) => {
-                  // この値がないPriceは、Stripe Checkoutで決済できないので除外
-                  if (!price.unit_amount_decimal) return;
-                  const row = priceBody.insertRow()
-                  row.insertCell().innerHTML = price.nickname || '無名のプラン'
-                  row.insertCell().innerHTML = `${Number(price.unit_amount_decimal).toLocaleString('jp-JP')} (${price.currency.toLocaleUpperCase()})`
-                  
-                  // 購入ボタンの作成
-                  createStripeCheckoutButton(row, price)
-                })
-                element.appendChild(priceElement)
-              }
-            })
-            target.appendChild(element)
-          })
-          .catch(e => {
-            console.log(e)
-          })
-      }
-    </script>
-  </body>
 </html>
