@@ -4,6 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Stripe NestJS</title>
+    <script src="https://js.stripe.com/v3/"></script>
   </head>
   <body is="home">
     <h1>Hello NestJS app</h1>
@@ -32,6 +33,17 @@
       }
       </script>
     <script>
+      // 購入ボタンの作成
+      function createStripeCheckoutButton(row, price) {
+        const button = window.document.createElement('button')
+        button.innerText = '購入する'
+        button.addEventListener('click', function() {
+          alert('clicked' + price.id)
+        })
+        row.insertCell().appendChild(button)
+      }
+
+      // 商品一覧の取得と表示
       window.onload = function () {
         fetch(window.location + 'products')
           .then(response => {
@@ -69,7 +81,7 @@
                 const row = priceHeader.insertRow(0)
                 row.insertCell().innerHTML = 'プラン名'
                 row.insertCell().innerHTML = '料金'
-                
+
                 const priceBody = priceElement.createTBody()
                 product.prices.forEach((price) => {
                   // この値がないPriceは、Stripe Checkoutで決済できないので除外
@@ -77,9 +89,9 @@
                   const row = priceBody.insertRow()
                   row.insertCell().innerHTML = price.nickname || '無名のプラン'
                   row.insertCell().innerHTML = `${Number(price.unit_amount_decimal).toLocaleString('jp-JP')} (${price.currency.toLocaleUpperCase()})`
-                  const button = window.document.createElement('button')
-                  button.innerText = '購入する'
-                  row.insertCell().appendChild(button)
+                  
+                  // 購入ボタンの作成
+                  createStripeCheckoutButton(row, price)
                 })
                 element.appendChild(priceElement)
               }
